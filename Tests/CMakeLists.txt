@@ -1,8 +1,8 @@
-#project(RottenFishTests)
+project(RottenFishTests)
 
-add_subdirectory(Lib2/googletest/googletest)
+add_subdirectory(Vendors/googletest/googletest)
 
 include_directories(${gtest_SOURCE_DIR}/include ${gtest_SOURCE_DIR} )
 
-add_subdirectory(BasicTests)
+add_subdirectory(Tests)
 
