@@ -19,12 +19,12 @@ For example, a constant average of only ~0.2 ns per random value is needed on a 
 
 
 It's not intended to be monte-carlo critical accurate, but to give a credible magnitude approximation.
-May be totaly suitable for videogames, CGI, ...
+Totaly suitable for videogames, CGI, ...
 
 The library works using precomputed data tables (~4K of data) .
 With some bit-like magnitude and linear interpolation, it try to give you the best values matching your experiment variables.
 
-The random generator service underlying is a Xor Shift "Marsaglia", a good implementation for speed targeting.
+The random generator service underlying is a Xor Shift "Marsaglia", a good implementation when speed targeting.
 
 
  EXAMPLE USE when static linked
