@@ -29,27 +29,34 @@ public:
 
     /**
      * Get one double value in [0,1]
-     * @param bitsResolution to consume only random we need we specify the resolution
+     * @param bitsNeeded to consume only random we need we specify the resolution
      * @return
      */
-    double rand(int bitsResolution){
+    double rand(int bitsNeeded){
         unsigned long out = 0 ;
         unsigned long max = 0 ;
-        bool isAllOne = true ;
-        for (int i = 0; i < bitsResolution; i++) {
-            if (bitsResolution > availableBits) {
-                reloadRandomFeed();
-            }
-            out = out << 1 ; //left shift
-            out+= randfeed & 1; //add the rightest bit from randfeed
-            randfeed = randfeed >> 1; //right shift randfeed because we lost one value
-            availableBits-- ;
-            max = max << 1 ;
-            max+=1 ;
+
+        while (bitsNeeded > availableBits) {
+            consumeBitsReserve(availableBits,out,max);
+            bitsNeeded-=availableBits;
+            reloadRandomFeed();
         }
+        consumeBitsReserve(bitsNeeded ,out,max);
         return (double) out / (double) max ;
     }
 
+
+
+private:
+    inline void consumeBitsReserve(char nbBits,unsigned long &out,unsigned long &max) {
+        unsigned long mask = ( 1 << nbBits ) -1 ; //ex : nbBits = 4 -> 1111
+        out = out << nbBits ; //left shift
+        out+= randfeed & mask; //add the rightest bits from randfeed
+        randfeed = randfeed >> nbBits; //right shift randfeed because we lost nbBits values
+        availableBits-=nbBits ;
+        max = max << nbBits ;
+        max+=mask ;
+    }
 
 
 
