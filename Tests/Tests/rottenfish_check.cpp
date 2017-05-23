@@ -92,3 +92,23 @@ TEST(rottenfish_check,average_three) {
 
     delete(rottenFishOperator) ;
 }
+
+TEST(rottenfish_check,average_for) {
+RottenFish *rottenFishOperator = RottenFish::getInstance();
+
+rottenFishOperator->loadExperienceFromExpected(0.1, 4);
+
+int nbExperiences = 100 ;
+int somme = 0 ;
+int simulation ;
+for (int i = 0; i < nbExperiences; i++) {
+simulation = rottenFishOperator->getSimulation();
+somme+=simulation;
+}
+double moy = somme / nbExperiences ;
+
+ASSERT_GE(moy,0.09);
+ASSERT_GE(0.11,moy);
+
+delete(rottenFishOperator) ;
+}

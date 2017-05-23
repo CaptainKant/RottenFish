@@ -15,10 +15,11 @@ set(SOURCE_FILES
         ${rottenfish_SOURCE_DIR}/XorShiftMarsagliaBitsReserve.h
         ${rottenfish_SOURCE_DIR}/Log2.cpp
         ${rottenfish_SOURCE_DIR}/Log2.h
-        Extensions/PHP/rottenfish_php.c)
+        )
 
 add_executable(Example example.cpp ${SOURCE_FILES})
 
+add_executable(Example2 example.cpp ${SOURCE_FILES})
 
 add_subdirectory(Tests)
 

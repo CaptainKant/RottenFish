@@ -9,10 +9,11 @@
 
 class XorShiftMarsagliaBitsReserve {
     private:
-    int availableBits = 0;
+    unsigned int availableBits = 0;
     unsigned long x=123456789 ;
     unsigned long  y=362436069 ;
-    unsigned long randfeed=521288629 ;
+    unsigned long randfeed;
+    unsigned long randfeed_backup=521288629  ;
 
     void reloadRandomFeed() {
         unsigned long t;
@@ -21,8 +22,10 @@ class XorShiftMarsagliaBitsReserve {
         x ^= x << 1;
         t = x;
         x = y;
-        y = randfeed;
+        y = randfeed_backup;
         randfeed = t ^ x ^ y;
+        randfeed_backup = randfeed ;
+        availableBits = 8*sizeof(unsigned long);
     }
 
 public:
@@ -36,11 +39,14 @@ public:
         unsigned long out = 0 ;
         unsigned long max = 0 ;
 
+        //Tant que la demande est plus forte que l'offre
         while (bitsNeeded > availableBits) {
-            consumeBitsReserve(availableBits,out,max);
             bitsNeeded-=availableBits;
+            consumeBitsReserve(availableBits,out,max);
             reloadRandomFeed();
         }
+
+        //La demande est plus faible que l'offre
         consumeBitsReserve(bitsNeeded ,out,max);
         return (double) out / (double) max ;
     }
@@ -48,14 +54,14 @@ public:
 
 
 private:
-    inline void consumeBitsReserve(char nbBits,unsigned long &out,unsigned long &max) {
+    inline void consumeBitsReserve(unsigned int nbBits,unsigned long &out,unsigned long &max) {
         unsigned long mask = ( 1 << nbBits ) -1 ; //ex : nbBits = 4 -> 1111
         out = out << nbBits ; //left shift
         out+= randfeed & mask; //add the rightest bits from randfeed
         randfeed = randfeed >> nbBits; //right shift randfeed because we lost nbBits values
         availableBits-=nbBits ;
         max = max << nbBits ;
-        max+=mask ;
+        max += mask ;
     }
 
 
