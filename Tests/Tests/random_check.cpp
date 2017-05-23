@@ -15,6 +15,7 @@ TEST(random_check,random_moy) {
     double moy = somme / (double) nbExperiences ;
     ASSERT_TRUE(moy>0.4);
     ASSERT_TRUE(moy<0.6);
+    delete XorShiftMarsagliaBitsReserve ;
 }
 
 TEST(random_check,random_dist_1) {
@@ -30,5 +31,6 @@ TEST(random_check,random_dist_1) {
     }
     ASSERT_TRUE(reussites>5);
     ASSERT_TRUE(reussites<15);
+    delete XorShiftMarsagliaBitsReserve ;
 }
 
