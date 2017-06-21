@@ -6,6 +6,7 @@
 #define ROTTENFISH_ROTTENFISH_H
 
 #include <zconf.h>
+#include <scoped_allocator>
 #include "RawSamplingReference.h"
 #include "Log2.h"
 #include "XorShiftMarsagliaBitsReserve.h"
@@ -30,6 +31,9 @@ public:
     RottenFish(){
         log2op = new Log2();
         randomOp = new XorShiftMarsagliaBitsReserve();
+        for (int i = 0; i < 32 * 32 * SIZE_EXPERIENCE_RAW; i++) {
+            experiences[i] = 0 ;
+        }
     }
 
     ~RottenFish() {
@@ -193,6 +197,15 @@ static
     rottenFish->experiences[k+14] = k50m ;
     rottenFish->experiences[k+15] = k50p ;
     rottenFish->experiences[k+16] = m ;
+
+    //Next is set with same values, to avoid bug for non implemented extrapolations
+
+    if (rottenFish->experiences[k + 17] == 0 && rottenFish->experiences[k + 18] == 0) {
+        memcpy(& rottenFish->experiences[k + 17] , & rottenFish->experiences[k+0] ,SIZE_EXPERIENCE_RAW );
+    }
+
+
+
 }
 
 static RottenFish * getInstance(void){
