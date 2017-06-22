@@ -85,7 +85,7 @@ TEST(rottenfish_check,average_three) {
         simulation = rottenFishOperator->getSimulation();
         somme+=simulation;
     }
-    double moy = somme / nbExperiences ;
+    double moy = (double) somme / (double) nbExperiences ;
 
     ASSERT_GE(moy,8653000);
     ASSERT_GE(8653200,moy);
@@ -98,16 +98,16 @@ RottenFish *rottenFishOperator = RottenFish::getInstance();
 
 rottenFishOperator->loadExperienceFromExpected(0.1, 4);
 
-int nbExperiences = 100 ;
+int nbExperiences = 1000 ;
 int somme = 0 ;
 int simulation ;
 for (int i = 0; i < nbExperiences; i++) {
 simulation = rottenFishOperator->getSimulation();
 somme+=simulation;
 }
-double moy = somme / nbExperiences ;
+double moy = (double) somme / (double) nbExperiences ;
 
-ASSERT_GE(moy,0.09);
+ASSERT_GE(moy,0.08);
 ASSERT_GE(0.11,moy);
 
 delete(rottenFishOperator) ;

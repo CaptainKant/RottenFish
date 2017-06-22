@@ -53,6 +53,7 @@ public:
 
 
 
+
 private:
     inline void consumeBitsReserve(unsigned int nbBits,unsigned long &out,unsigned long &max) {
         unsigned long mask = ( 1 << nbBits ) -1 ; //ex : nbBits = 4 -> 1111

@@ -20,7 +20,7 @@ public:
 
     static const int SIZE_EXPERIENCE_RAW = 17;
     static constexpr double NATIVE_SAMPLING_WIDTH = 0.1;
-    static constexpr int NATIVE_SAMPLING_NUMBER = 1/NATIVE_SAMPLING_WIDTH;
+    static constexpr int NATIVE_SAMPLING_NUMBER = 10 ; // 1/NATIVE_SAMPLING_WIDTH;
 
     float experiences[32*32*SIZE_EXPERIENCE_RAW ];
 
@@ -96,6 +96,7 @@ public:
         bag_needed_random_resolution = (unsigned int) experiences[bag_nativeIndex+2];
         bag_nativeIndex_supp = getKForIJ(bag_n_index,bag_m_index_sup);
         float $mSuperiorReference = experiences[bag_nativeIndex_supp+16];
+        // n [0,1] n+1
         bag_linear_cursor_interpolation = (float) ( bag_m - $mInferiorReference ) / ($mSuperiorReference-$mInferiorReference) ;
         if (bag_n==1 || bag_m < NATIVE_SAMPLING_WIDTH) {
             if ( bag_m <=  ((float) bag_n / 2.0)) {
@@ -111,12 +112,17 @@ public:
             }
         }
 
-
         float yMinPlotOne = experiences[bag_nativeIndex];
         bag_yMin = (yMinPlotOne + (experiences[bag_nativeIndex_supp] - yMinPlotOne) * bag_linear_cursor_interpolation ) * bag_m;
         float yMinPlotTwo = experiences[bag_nativeIndex + 1];
         bag_yDelta = (yMinPlotTwo + (experiences[bag_nativeIndex_supp + 1] - yMinPlotTwo) * bag_linear_cursor_interpolation ) * bag_m;
         bag_yDelta = bag_yDelta - bag_yMin ;
+    }
+
+    long getMinTirageAcceptable() {
+        auto v = ((1-bag_linear_cursor_interpolation)*experiences[bag_nativeIndex+14] + bag_linear_cursor_interpolation*experiences[bag_nativeIndex_supp+14])*bag_m;
+        if( v < 0 )return 0 ;
+        return v ;
     }
 
 
@@ -148,16 +154,68 @@ public:
 
         //Main algo
         double $x = randomOp->rand(bag_needed_random_resolution);
+        return XtoY($x);
+
+    }
+
+    /**
+     * For x in [0,1] , get the nb of tirage
+     * @param res
+     * @param $x
+     * @return
+     */
+    unsigned int inline XtoY( double $x) const {
         double $xp = $x * NATIVE_SAMPLING_NUMBER ;
         unsigned int $i = (unsigned int) ($xp);
         double $k = $xp - $i;
         float plot_two = experiences[bag_nativeIndex + $i + 3];
-        double $y1 = (plot_two + (experiences[bag_nativeIndex_supp+ $i + 3] - plot_two) * bag_linear_cursor_interpolation );
+        double $y1 = (plot_two + (experiences[bag_nativeIndex_supp + $i + 3] - plot_two) *
+                                 bag_linear_cursor_interpolation);
         float plotOne = experiences[bag_nativeIndex + $i + 4];
-        double $y2 = (plotOne + (experiences[bag_nativeIndex_supp + $i + 4] - plotOne) * bag_linear_cursor_interpolation );
-        res = (unsigned int) (bag_yMin + ((1 - $k) * $y1 + $k * $y2) * bag_yDelta);
+        double $y2 = (plotOne + (experiences[bag_nativeIndex_supp + $i + 4] - plotOne) *
+                                bag_linear_cursor_interpolation);
+        unsigned int res = (unsigned int) (bag_yMin + ((1 - $k) * $y1 + $k * $y2) * bag_yDelta);
         return res;
+    }
 
+    /**
+     * Get a indicative force between [0,1] of credibility of a draw
+     * 1 = 100% of the draws are in this range of value
+     * 0 = 0% of the draws are in this range of value
+     * @param draw
+     * @return
+     */
+    float getCredibily(unsigned int draw){
+
+        int nbPointsPlusExentres = 0 ;
+        int nbPoints = 0 ;
+        float x ;
+        if (draw < bag_m) {
+            x = 0.0 ;
+            while( true ) {
+                auto v = XtoY(x);
+                nbPoints ++ ;
+                if(v <= draw) nbPointsPlusExentres ++ ;
+                x+= 0.01 ;
+                if (v >= bag_m || x>= 1) {
+                    break ;
+                }
+            }
+        } else {
+            x = 1.0 ;
+            while( true ) {
+                auto v = XtoY(x);
+                nbPoints ++ ;
+                //std::cout << "da "  << x << "-" << v << std::endl;
+                if(v >= draw) nbPointsPlusExentres ++ ;
+                x-= 0.01 ;
+                if (v <= bag_m || x<= 0) {
+                    //std::cout << "inf bag m = "  << bag_m << std::endl;
+                    break ;
+                }
+            }
+        }
+        return (float) nbPointsPlusExentres/ (float) nbPoints ;
     }
 
 
@@ -200,9 +258,12 @@ static
 
     //Next is set with same values, to avoid bug for non implemented extrapolations
 
+    /*
     if (rottenFish->experiences[k + 17] == 0 && rottenFish->experiences[k + 18] == 0) {
         memcpy(& rottenFish->experiences[k + 17] , & rottenFish->experiences[k+0] ,SIZE_EXPERIENCE_RAW );
     }
+     */
+
 
 
 
@@ -211,6 +272,11 @@ static
 static RottenFish * getInstance(void){
         if (!static_pInstance) {
             static_pInstance = new RottenFish;
+
+            for(auto i = 0 ; i < 32 * 32 * SIZE_EXPERIENCE_RAW ; i++) {
+                static_pInstance->experiences[i]= 0 ;
+            }
+
             load_all_poisson();
         }
     return static_pInstance ;
